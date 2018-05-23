@@ -9,9 +9,9 @@ public class Game {
 	private Grid passiveGrid;
 
 	Game(int size) {
-		// when a new game is created, 2 Board are created for each player
-		setActiveGrid(new Grid(1, size)); 	// A Board only take player number in
-										// arguments
+		// quand le nouveau jeu est cree, deux grilles sont crees pour chaque joueur
+		setActiveGrid(new Grid(1, size)); 	// la grille prend le numero d'un joueur en parametre
+										
 		setPassiveGrid(new Grid(2, size));
 	}
 
@@ -19,7 +19,7 @@ public class Game {
 		for (int i = 0; i < 50; i++) {
 			System.out.println("");
 		}
-		System.out.println("_____________________________________");
+		System.out.println("");
 	}
 
 	public Grid getActiveGrid() {
@@ -44,5 +44,6 @@ public class Game {
 		this.setPassiveGrid(switchGrid);
 	}
 
-	// This function will ask user for a valid position
+
 }
+
