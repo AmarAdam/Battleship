@@ -8,18 +8,18 @@ public class Grid {
 	Scanner sc = new Scanner(System.in);
 	private int shipLengths[] = { 5, 4, 3, 3, 2 };
 	private ArrayList<Ship> ships = new ArrayList<Ship>();
-	private ArrayList<String> shots = new ArrayList<String>();
-	private ArrayList<String> took = new ArrayList<String>();
+	private ArrayList<String> shots = new ArrayList<String>(); //tirs envoyes
+	private ArrayList<String> stepsided = new ArrayList<String>(); // tirs encaisses
 	public static final String ANSI_RED = "\u001B[31m";
 	public static final String ANSI_RESET = "\u001B[0m";
 
 	
-	boolean alive = true;
-	private int playerNbr, size;
+	boolean inGame = true;
+	private int NbrPlayer, size;
 
 	Grid(int playerNbr, int size) {
 		setPlayerNbr(playerNbr);
-		setAlive(true);
+		setinGame(true);
 		setSize(size);
 		
 		System.out.println("");
@@ -28,27 +28,27 @@ public class Grid {
 		
 		int i = 0;
 
-		String startCell = "";
-		String endCell = "";
+		String startSquare = "";
+		String endSquare = "";
 
 		while (i < getShipLenghts().length) {
 			System.out.println("Give me coordonates for a " + getShipLenghts()[i]
 					+ " squares WarShip.");
 			System.out.println("Give me coordonates of the starting position of your Ship, Amiral ! ( like this : A-J / 1-10 )");
 
-			startCell = this.askForPosition();
+			startSquare = this.askPosition();
 			System.out.println("Give me coordonates of the ending position of your Ship, Amiral ! ( like this : A-J / 1-10 )");
-			endCell = this.askForPosition();
+			endSquare = this.askPosition();
 			
-			if ((endCell.charAt(0) < startCell.charAt(0)) || (Character.getNumericValue(endCell.charAt(1)) < Character.getNumericValue(startCell.charAt(1)))) {
-				String switchString = endCell;
-				endCell = startCell;
-				startCell = switchString;
+			if ((endSquare.charAt(0) < startSquare.charAt(0)) || (Character.getNumericValue(endSquare.charAt(1)) < Character.getNumericValue(startSquare.charAt(1)))) {
+				String switchString = endSquare;
+				endSquare = startSquare;
+				startSquare = switchString;
 			}
 		
-			int len = lenCalc(startCell, endCell);
+			int len = LengthShip(startSquare, endSquare);
 			if (getShipLenghts()[i] == len) {
-				if (placeShip(startCell, endCell, len, i)) {
+				if (placeShip(startSquare, endSquare, len, i)) {
 					i++;
 				} else {
 					System.out
@@ -87,7 +87,7 @@ public class Grid {
 						+ String.valueOf((i));
 				if (usedCells.indexOf(testCell) >= 0) {
 					System.out.print("o");
-				} else if (took.indexOf(testCell) >= 0) {
+				} else if (stepsided.indexOf(testCell) >= 0) {
 					System.out.print("x");
 				} else {
 					System.out.print("-");
@@ -99,7 +99,7 @@ public class Grid {
 				String testCell = Character.toString((char) (65 + j))
 						+ String.valueOf((i));
 				if (isHit(testCell)) {
-					System.out.print(ANSI_RED + "x" + ANSI_RESET);
+					System.out.print("x");
 				} else {
 					System.out.print("-");
 				}
@@ -110,45 +110,44 @@ public class Grid {
 		System.out.println("");
 	}
 
-	// shoot function will tell all ships
-	// that a cell have been shot
-	public String shoot(String shootCell) {
+	// fonction de tir, check tous les ship
+	// qui ont une case touchee
+	public String Fire(String shootSquare) {
 
 		// First of all, we got to save that this cell has been shot
 
-		took.add(shootCell);
+		stepsided.add(shootSquare);
 		String result = "miss";
 
-		// This for loop will get all ships one by one
+		// la boucle prend les bateaux un par un
 		for (Ship ship : getShips()) {
-			// Test if on that ship, there is shooted cell
-			result = ship.EnnemyFire(shootCell);
-			// If one ship have that cell, and have no cell left, "kill" will be
-			// return
+			// verifie si la case est touche pour chaque bateau
+			result = ship.FireOpponent(shootSquare);
+			// si un bateau a cet case, et aucune autre, on renvoi kill, le bateau est coule
 			if (result == "kill") {
 				getShips().remove(ship);
 				System.out.println(getShips().size() + " length WarShip down ! for Amiral "
 						+ getPlayerNbr());
 				if (getShips().size() == 0) {
-					setAlive(false);
+					setinGame(false);
 				}
 				return result;
 			}
-			// Else If one ship have that cell, "hit" will be return
+			// sinon, un bateau a cette case, on renvoi seulement hit 
 			else if (result == "hit") {
 				return result;
 			}
 		}
-		// Else If no ship is hit, "miss" will be return
+		// si aucun bateau n'a la case passee en parametre on renvoi miss
 		return result;
 	}
 
-	public boolean isAlive() {
-		return alive;
+	public boolean inGame() {
+		return inGame;
 	}
 
 	public int getPlayerNbr() {
-		return playerNbr;
+		return NbrPlayer;
 	}
 
 	public int[] getShipLenghts() {
@@ -171,32 +170,30 @@ public class Grid {
 		this.shots.add(cell);
 	}
 
-	// return true if cell is free to use
-	private boolean isValid(String testCell) {
+	// renvoi true si la case est libre
+	private boolean isOK(String testSquare) {
 		boolean result = true;
-		// System.out.println("DEBUG(isValid) : testing cell "+testCell);
-		for (Ship ship : getShips()) { // For each Battleship
-			// if one ship already use this cell
-			if (ship.testCell(testCell)) {
+		for (Ship ship : getShips()) { // pour chaque ship
+			// si un shi utilise deja cette square
+			if (ship.testSquare(testSquare)) {
 				result = false;
 			}
 		}
 		return result;
 	}
 
-	// This function will ask user for a valid position
-	public String askForPosition() {
+	// demande un position
+	public String askPosition() {
 
-		String cell = "";
-		ArrayList<String> usable = getUsable();
+		String square = "";
+		ArrayList<String> usable = FreeSquares();
 
-		// String typed by the user must be in generated map
-		cell = sc.next();
-		while (usable.indexOf(cell) < 0) {
+		square = sc.next();
+		while (usable.indexOf(square) < 0) {
 			System.out.println("Incorrect position Amiral, please give another one, valid if possible...");
-			cell = sc.next();
+			square = sc.next();
 		}
-		return cell;
+		return square;
 	}
 
 	private boolean placeShip(String startCell, String endCell, int len, int i) {
@@ -204,7 +201,7 @@ public class Grid {
 		result = true;
 		ArrayList<String> array = getArray(startCell, endCell, len);
 		for (String testBox : array) {
-			if (!(isValid(testBox))) {
+			if (!(isOK(testBox))) {
 				result = false;
 			}
 		}
@@ -214,7 +211,7 @@ public class Grid {
 		return result;
 	}
 
-	private int lenCalc(String startCell, String endCell) {
+	private int LengthShip(String startCell, String endCell) {
 		char xStart = startCell.charAt(0);
 
 		int yStart = Character.getNumericValue(startCell.charAt(1));
@@ -238,22 +235,21 @@ public class Grid {
 		}
 
 		int len = 0;
+		
 		if (xStart != xEnd && yStart != yEnd) {
-			// System.out.println("Maybe placing your point on same X or Y would
-			// help ");
+			
 			len = -1;
+		
 		} else if (xStart == xEnd && yStart == yEnd) {
-			// System.out.println("DEBUG(lenCalc) : Len Calculed : " + 1);
+			
 			len = 0;
+		
 		} else if (xStart == xEnd) {
-			// System.out.println("DEBUG(lenCalc) : Len Calculed : " + ((yEnd -
-			// yStart) +
-			// 1));
+		
 			return ((yEnd - yStart) + 1);
+		
 		} else if (yStart == yEnd) {
-			// System.out.println("DEBUG(lenCalc) : Len Calculed : " + ((xEnd -
-			// xStart) +
-			// 1));
+		
 			return ((xEnd - xStart) + 1);
 		}
 		return len;
@@ -283,7 +279,6 @@ public class Grid {
 		}
 
 		ArrayList<String> array = new ArrayList<String>();
-		// System.out.print("DEBUG(getArray) : Generating array ");
 		String builder;
 
 		if (xStart == xEnd) {
@@ -304,41 +299,41 @@ public class Grid {
 
 	private boolean isHit(String testCell) {
 		boolean result = false;
-		if (getShots().indexOf(testCell) >= 0) { // If there is one cell which
-													// have same location
+		if (getShots().indexOf(testCell) >= 0) { // verifie si la case a la meme localisation
+													
 			result = true;
 		}
 		return result;
 	}
 
-	public ArrayList<String> getUsable() {
-		ArrayList<String> usableCells = new ArrayList<String>();
+	public ArrayList<String> FreeSquares() {
+		ArrayList<String> freeSquares = new ArrayList<String>();
 		for (int i = 1; i < getSize() + 1; i++) {
 			for (int j = 0; j < getSize(); j++) {
-				String usableCell = Character.toString((char) (65 + j))
+				String freeSquare = Character.toString((char) (65 + j))
 						+ String.valueOf((i));
-				usableCells.add(usableCell);
+				freeSquares.add(freeSquare);
 			}
 		}
-		return usableCells;
+		return freeSquares;
 	}
 
 	private ArrayList<String> getUsed() {
-		ArrayList<String> usedCells = new ArrayList<String>();
+		ArrayList<String> usedSquares = new ArrayList<String>();
 		for (Ship ship : getShips()) {
-			for (String cell : ship.getCells()) {
-				usedCells.add(cell);
+			for (String square : ship.getCells()) {
+				usedSquares.add(square);
 			}
 		}
-		return usedCells;
+		return usedSquares;
 	}
 
-	private void setAlive(boolean alive) {
-		this.alive = alive;
+	private void setinGame(boolean inGame) {
+		this.inGame = inGame;
 	}
 
-	private void setPlayerNbr(int playerNbr) {
-		this.playerNbr = playerNbr;
+	private void setPlayerNbr(int NbrPlayer) {
+		this.NbrPlayer = NbrPlayer;
 	}
 
 	private ArrayList<Ship> getShips() {
