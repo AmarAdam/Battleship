@@ -1,8 +1,5 @@
 package megherat.adam;
 
-import java.io.File;
-import java.io.PrintWriter;
-
 public class Main {
 
 	public static void main(String[] args) throws InterruptedException {
@@ -14,15 +11,15 @@ public class Main {
 			Game newGame = new Game(size);
 			String square;
 			
-			while (newGame.getActiveGrid().isAlive() && newGame.getPassiveGrid().isAlive()) {
+			while (newGame.getActiveGrid().inGame() && newGame.getPassiveGrid().inGame()) {
 				System.out.println("Amiral " + newGame.getActiveGrid().getPlayerNbr() + ", it's your turn !");
 			
 				newGame.getActiveGrid().DisplayGrid();
 
 				System.out.println("Amiral, give me coordonates to strike ?");
 				
-				square = newGame.getActiveGrid().askForPosition();
-				System.out.println(newGame.getPassiveGrid().shoot(square));
+				square = newGame.getActiveGrid().askPosition();
+				System.out.println(newGame.getPassiveGrid().Fire(square));
 				
 				newGame.getActiveGrid().addShot(square);
 				newGame.switchGrid();
