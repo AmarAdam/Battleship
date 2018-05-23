@@ -5,60 +5,63 @@ import java.util.ArrayList;
 public class Ship {
 	
 	private int length;
-	private ArrayList<String> cells = new ArrayList<String>();
+	private ArrayList<String> squares = new ArrayList<String>();
 
 	Ship(ArrayList<String> cells) {
-		// System.out.println("Creating BattleShip");
 
 		for (String cell : cells) {
-			addCell(cell);
+			addSquare(cell);
 		}
 
 		System.out.println("\nBattleShip created\n");
 
 	}
 
-	// Return true if tested cell is already used by this ship
-	public boolean testCell(String cell) {
+	// Renvoi true si la case testé est occupée
+	public boolean testSquare(String square) {
 		boolean result = false;
-		for (String locs : cells) {
-			// If cell is already used
-			if (locs.indexOf(cell) >= 0) {
+		for (String locs : squares) {
+	
+			if (locs.indexOf(square) >= 0) {
 				result = true;
 			}
 		}
-		// Else cell is free to use
+		// Sinon la case n'est pas occupé donc 
 		return result;
 	}
 
 	// Tell this ship a cell have been hit
-	public String EnnemyFire(String testCell) {
-		// Check index to determine if position was used by this ship
-		int index = getCells().indexOf(testCell);
+	public String FireOpponent(String testSquare) {
+		// vérifie si la case est occupé
+		int index = getSquares().indexOf(testSquare);
 		String result = "miss";
-		// If position is used
+		// si la case est utilisé
 		if (index >= 0) {
-			// Remove concerned cell, it existent no longer have meaning
-			getCells().remove(index);
-			// If this ship don't have any cell, it's the end for him
-			if (getCells().size() == 0) {
+			// on supprime la case, elle est touchée, donc détruite
+			getSquares().remove(index);
+			// si le bateau n'a plus de case, il est donc détruit
+			if (getSquares().size() == 0) {
 				result = "kill";
 			}
-			// Else he still have been hit
+			// sinon il est touché
 			else {
 				result = "hit";
 			}
 		}
-		// Else if no cell is shot return "miss"
+		// sinon on return miss
 		return result;
 	}
-
+	
+	public ArrayList<String> getSquares() {
+		return this.squares;
+	}
+	
 	public ArrayList<String> getCells() {
-		return this.cells;
+		return this.squares;
 	}
 
-	public void setCells(ArrayList<String> cells) {
-		this.cells = cells;
+	public void setSquares(ArrayList<String> squares) {
+		this.squares = squares;
 	}
 
 	public int getLength() {
@@ -69,8 +72,8 @@ public class Ship {
 		this.length = length;
 	}
 
-	private void addCell(String cell) {
-		this.cells.add(cell);
+	private void addSquare(String square) {
+		this.squares.add(square);
 	}
 
 }
